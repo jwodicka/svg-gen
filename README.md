@@ -1,4 +1,18 @@
+# svg-gen
+
+`svg-gen` is a web-based tool for producing SVGs from templates.
+
+This tool is currently *janky* and *not ready for production use*. Feel free to play with it, fork
+it, file issues, and such.
+
+## Use-cases
+
+This project is being developed primarily to address two needs:
+* Produce consistent images from raw text for use as signage at conventions.
+* Produce variations on consistent vector designs for use in laser-cutting and other CNC fabrication.
+
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+Boilerplate instructions from Create React App follow.
 
 ## Available Scripts
 
