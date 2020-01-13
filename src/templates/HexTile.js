@@ -1,4 +1,4 @@
-import {svg, variable} from './Svg';
+import {svg, variable} from '../svg';
 
 const top = variable("Top", {defaultValue: "A B C"});
 const topRight = variable("Top-Right", {defaultValue: "D E F"});

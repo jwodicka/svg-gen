@@ -1,14 +1,5 @@
 import React from 'react';
-import WrapText from './WrapText';
-
-// <style>
-//   .panelName {
-//     font-family: "Diavlo";
-//     font-size: 150px;
-//     text-anchor: middle;
-//     background-color: red;
-//   }
-// </style>
+import {WrapText} from '../svg';
 
 const ScheduleSign = React.forwardRef((props, ref) => (
   <svg ref={ref} version="1.1" xmlns="http://www.w3.org/2000/svg" width="11in" height="8.5in" viewBox="0 0 1100 850">
