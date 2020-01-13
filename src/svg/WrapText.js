@@ -21,7 +21,7 @@ const splitText = (text, segments) => {
     return [text];
   } if (deltaBefore == null || deltaAfter == null) {
     return splitAt(text, segments, deltaBefore !== null ? spaceBefore : spaceAfter, segments);
-  } if (deltaBefore < deltaAfter) {
+  } if (deltaBefore <= deltaAfter) {
     return splitAt(text, segments, spaceBefore);
   } else {
     return splitAt(text, segments, spaceAfter);
