@@ -1,5 +1,6 @@
 import React, {useRef, useLayoutEffect, useState} from 'react';
 
+/* Helper functions for managing text layout */
 const splitAt = (text, segments, splitPoint) => {
   return [text.slice(0, splitPoint), ...splitText(text.slice(splitPoint+1), segments - 1)];
 }
@@ -28,57 +29,93 @@ const splitText = (text, segments) => {
   }
 }
 
-const WrapText = ({text="", x, y, width, height}) => {
-  // Ref used to measure the text block
+/* The actual component we export */
+const WrapText = ({
+    text="",
+    x,
+    y,
+    width,
+    height,
+    fontFamily="sans-serif",
+    fontSize=100,
+  }) => {
+  /************************************************************************************************/
+  /* Define hooks */
+
+  // textRef is used to measure the text block post-rendering
   const textRef = useRef(null);
 
-  // State holds the current text breaking strategy
+  // textBreak holds the current text breaking strategy
   const [textBreak, setTextBreak] = useState({base: "", split: [""]});
+
+  // overflow holds whether we are currently in an overflow state
   const [overflow, setOverflow] = useState(false);
 
+  /************************************************************************************************/
+  /* Define derived values */
+
+  // textStyle will be applied to the outer text element
+  const textStyle = {
+    fontFamily,
+    fontSize,
+    textAnchor: "middle",
+  }
+
+  // halfLineHeight is used as part of positioning
+  const halfLineHeight = fontSize / 2;
+
+  // We can fit up to height / lineHeight lines in the region.
+  const maxLines = height / fontSize;
+
+  // textBase is the starting point for the text elements within the bounding rectangle.
+  const lineCount = textBreak.split.length;
+  const textBaseX = x + (width/2);
+  const textBaseY = y + (height/2) - (halfLineHeight * (lineCount - 1));
+
+  /************************************************************************************************/
+  /* The reflow logic */
+
   // If state doesn't match the current text, update state.
+  // TODO: Should this be inside an effect? It's got some statefulness.
   if (textBreak.base !== text) {
     setTextBreak({base: text, split: [text]});
   }
 
+  // Attempt to fit the flow by word-breaking.
   useLayoutEffect(() => {
+    /* Render-dependent values: */
     // Get the width of the current layout
     const boundingRect = textRef.current.getBBox();
     const currentTextLength = boundingRect.width;
 
-    // We can fit up to height / lineHeight lines in the region.
-    const maxLines = height / 150;
-
-    const overflowing = currentTextLength > width
-
-    if (overflowing) {
+    if (currentTextLength > width) {
       // If we are currently overflowing
-      const lineCount = textBreak.split.length;
-      console.log("Overflow", currentTextLength, "lines", lineCount, "/", maxLines);
-      console.log("lines", textBreak.split)
-
       if (lineCount + 1 <= maxLines) {
-        setTextBreak({base: text, split: splitText(textBreak.base, lineCount+1)});
+        setTextBreak({base: text, split: splitText(text, lineCount+1)});
       } else {
         setOverflow(true);
-        console.log("too many lines")
       }
     } else {
-      if (overflow) {
-        setOverflow(false);
-      }
-      console.log("Length OK", currentTextLength);
+      setOverflow(false);
     }
-  }, [width, height, overflow, text, textBreak.base, textBreak.split]);
+  }, [width, maxLines, lineCount, text]);
   
-  const textBaseX = x + (width/2);
-  const textBaseY = y + (height/2) - (75 * (textBreak.split.length - 1));
+  /************************************************************************************************/
+  /* Build the individual sub-lines */
+  // Each line resets x to the base value. Every line after the first offsets y from the previous
+  // line by the line height.
+  const makeSpan = (line, index) => (
+    <tspan x={textBaseX} dy={(index > 0) ? fontSize : 0}>{
+      line
+    }</tspan>
+  );
 
-  const makeSpan = (text, index) => (<tspan x={textBaseX} dy={(index > 0) ? 150 : 0}>{text}</tspan>)
-
+  // TODO: The rect here is a debugging construct for showing the extents of this object. We should
+  // probably be more aggressive about removing it rather than just making it invisible, if it's not
+  // being shown.
   return (<g>
     <rect x={x} y={y} width={width} height={height} fill={ overflow ? "pink" : "none"}/>
-    <text dominant-baseline="middle" ref={textRef} x={textBaseX} y={textBaseY} className="panelName">{textBreak.split.map(makeSpan)}</text>
+    <text style={textStyle} dominant-baseline="middle" ref={textRef} x={textBaseX} y={textBaseY} className="panelName">{textBreak.split.map(makeSpan)}</text>
   </g>);
 }
 
